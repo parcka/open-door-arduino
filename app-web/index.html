@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ESP8266 Test System</title>
+
+    <!--CDNS-->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+        crossorigin="anonymous">
+
+
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <p>Aqui va el header</p>
+            <h1>TESTEO PARA EL ESP8266</h1>
+        </div>
+        <div class="main">
+            <div class="row" style="text-align:center">
+                <button type="button" class="btn btn-primary" style="border-radius: 50%; width: 300px; height: 300px" onclick="toggleLEd()">Toogle LED</button>
+            </div>
+            <div class="row">
+                <p>LED VALUE: </p>
+                <p id="ledValue" style="background: red"></p>
+            </div>
+               
+            <p> el main content</p>
+        </div>
+        <div class=""></div>
+        <p>
+            CONTAINER
+        </p>
+    </div>
+    <div class="footer"></div>
+</body>
+
+<!--Funcion para el manejo de WebSockets-->
+<script>
+    var operation = {};
+    var ledState = 'OFF';
+    var ledValueElement = document.getElementById('ledValue');
+    operation.socket = new WebSocket('ws://' + location.hostname + ':81/', ['arduino']);
+    //operation.socket = new WebSocket('ws://' + '192.168.31.66' + ':81/', ['arduino']);
+
+    operation.socket.onopen = function () {
+        operation.socket.send('Connected  -  ' + new Date());
+    }
+    operation.socket.onmessage = function (event) {
+        console.log('Server (incomming): ', event.data);
+        var payload = JSON.parse(event.data);
+        console.log(ledValueElement.innerHTML);
+        ledValueElement.innerHTML = payload.status;
+
+        
+    }
+    operation.socket.onerror = function (error) {
+        console.log('WebSocket Error!!!', error);
+    }
+
+
+    function toggleLEd() {
+        var ledValueElement = document.getElementById('ledValue');
+        var value = ledValueElement.innerText;
+        console.log('Capturing value innerText: ',value);
+        switch (value) {
+            case 'true':
+            sendToSocket(false);
+                break;
+            case 'false':
+            sendToSocket(true);
+                break;
+            default:
+            sendToSocket(true);
+            break;
+
+
+
+        }
+
+    }
+    function sendToSocket(value) {
+        console.log('Client (sending): ' + value);
+        operation.socket.send(value);
+    }
+</script>
+
+
+</html>
